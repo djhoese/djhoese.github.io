@@ -1,58 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>David Hoese - articles</title><link href="https://djhoese.github.io/" rel="alternate"></link><link href="https://djhoese.github.io/feeds/articles.atom.xml" rel="self"></link><id>https://djhoese.github.io/</id><updated>2019-01-03T00:00:00-06:00</updated><entry><title>Generating a time series of GOES-16 ABI channels</title><link href="https://djhoese.github.io/blog/2019/01/03/generating-a-time-series-of-goes-16-abi-channels/" rel="alternate"></link><published>2019-01-03T00:00:00-06:00</published><updated>2019-01-03T00:00:00-06:00</updated><author><name>David Hoese</name></author><id>tag:djhoese.github.io,2019-01-03:/blog/2019/01/03/generating-a-time-series-of-goes-16-abi-channels/</id><summary type="html">&lt;p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>David Hoese - articles</title><link href="https://djhoese.github.io/" rel="alternate"></link><link href="https://djhoese.github.io/feeds/articles.atom.xml" rel="self"></link><id>https://djhoese.github.io/</id><updated>2019-01-03T00:00:00-06:00</updated><entry><title>Generating a time series of GOES-16 ABI channels</title><link href="https://djhoese.github.io/blog/2019/01/03/generating-a-time-series-of-goes-16-abi-channels/" rel="alternate"></link><published>2019-01-03T00:00:00-06:00</published><updated>2019-01-03T00:00:00-06:00</updated><author><name>David Hoese</name></author><id>tag:djhoese.github.io,2019-01-03:/blog/2019/01/03/generating-a-time-series-of-goes-16-abi-channels/</id><summary type="html">&lt;p&gt;&lt;span class="videobox"&gt;
+                &lt;iframe width="640" height="480"
+                    src='https://www.youtube.com/embed/GJY3lSBBry0?rel=0&amp;color=blue'
+                    frameborder='0' webkitAllowFullScreen mozallowfullscreen
+                    allowFullScreen&gt;
+                &lt;/iframe&gt;
+            &lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;
 &lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;
 &lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;p&gt;In the endless search for the coolest satellite data visualization I've now produced the following video after a request by a coworker. The video consists of GOES-16 ABI data from January 1st, 2019 from 10Z up to 24Z. Full disk images are used from each channel to show a time …&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/p&gt;</summary><content type="html">&lt;p&gt;
+&lt;p&gt;In the endless search for the coolest satellite data visualization I've produced the &lt;a href="https://youtu.be/GJY3lSBBry0"&gt;above video&lt;/a&gt; after a request by a coworker. The video consists of GOES-16 ABI data on January 1st, 2019 from 10Z up to 24Z. Full disk images are used to show a time series of each channel …&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/p&gt;</summary><content type="html">&lt;p&gt;&lt;span class="videobox"&gt;
+                &lt;iframe width="640" height="480"
+                    src='https://www.youtube.com/embed/GJY3lSBBry0?rel=0&amp;color=blue'
+                    frameborder='0' webkitAllowFullScreen mozallowfullscreen
+                    allowFullScreen&gt;
+                &lt;/iframe&gt;
+            &lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;
 &lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;
 &lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;p&gt;In the endless search for the coolest satellite data visualization I've now produced the following video after a request by a coworker. The video consists of GOES-16 ABI data from January 1st, 2019 from 10Z up to 24Z. Full disk images are used from each channel to show a time series of each channel from Channel 1 (C01) to Channel 16 (C16).&lt;/p&gt;
+&lt;p&gt;In the endless search for the coolest satellite data visualization I've produced the &lt;a href="https://youtu.be/GJY3lSBBry0"&gt;above video&lt;/a&gt; after a request by a coworker. The video consists of GOES-16 ABI data on January 1st, 2019 from 10Z up to 24Z. Full disk images are used to show a time series of each channel from Channel 1 (C01) to Channel 16 (C16).&lt;/p&gt;
 &lt;p&gt;&lt;sub&gt;Disclaimer: I wasn't going to write this up, but changed my mind after the end result was kind of neat. The code shown here was copied after the fact and although ugly it should still work.
 &lt;/sub&gt;&lt;/p&gt;
 
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;In&amp;nbsp;[16]:&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# If anyone has a better way to embed a youtube video in a jupyter notebook, let me know.&lt;/span&gt;
-&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;IPython.display&lt;/span&gt; &lt;span class="k"&gt;import&lt;/span&gt; &lt;span class="n"&gt;HTML&lt;/span&gt;
-&lt;span class="n"&gt;HTML&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
-&lt;span class="s2"&gt;&amp;lt;iframe width=&amp;quot;640&amp;quot; height=&amp;quot;360&amp;quot; src=&amp;quot;https://www.youtube.com/embed/GJY3lSBBry0?rel=0&amp;quot; frameborder=&amp;quot;0&amp;quot; allow=&amp;quot;accelerometer; encrypted-media; picture-in-picture&amp;quot; allowfullscreen&amp;gt;&amp;lt;/iframe&amp;gt;&lt;/span&gt;
-&lt;span class="s2"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div class="output_wrapper"&gt;
-&lt;div class="output"&gt;
-
-
-&lt;div class="output_area"&gt;
-
-&lt;div class="prompt output_prompt"&gt;Out[16]:&lt;/div&gt;
-
-
-
-&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
-
-&lt;iframe width="640" height="360" src="https://www.youtube.com/embed/GJY3lSBBry0?rel=0" frameborder="0" allow="accelerometer; encrypted-media; picture-in-picture" allowfullscreen&gt;&lt;/iframe&gt;
-
-&lt;/div&gt;
-
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-
 &lt;/div&gt;
 &lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;
