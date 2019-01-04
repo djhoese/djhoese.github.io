@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+        <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=endge, chrome=IE8" />
+    <meta name="viewport" content="initial-scale=1.0, width=device-width, user-scalable=no" />
+    <title>Generating a time series of GOES-16 ABI channels — David Hoese</title>
+    <!--[if lte IE 8]><script type="text/javascript" src="https://djhoese.github.io/theme/js/html5shiv.js"></script><![endif]-->
+    <link rel="stylesheet" type="text/css" href="https://djhoese.github.io/theme/css/skeleton.css" />
+    <link rel="stylesheet" type="text/css" href="https://djhoese.github.io/theme/css/theme.css" />
+    <link rel="shortcut icon" type="image/png" href="https://djhoese.github.io/favicon.png" />
+    <!--[if lte IE 8]><link rel="shortcut icon" type="image/x-icon" href="https://djhoese.github.io/favicon.ico" /><![endif]-->
+    <link rel="alternate" type="application/atom+xml"
+                           title="David Hoese — Flux Atom"
+                           href="https://djhoese.github.io/" /> 
+
+    <meta name="author"   content="David Hoese" />
+    <meta name="keywords" content="python, satellite, satpy, pytroll" />
+    <link rel="stylesheet" media="not print" type="text/css" href="https://djhoese.github.io/theme/css/pygments.css" /> 
+  </head>
+  <body>
+    <div id="page">
+      <header id="page-head">
+        <h1>
+          <a href="https://djhoese.github.io/index.html">David Hoese</a>
+        </h1>
+      </header>
+      
+      <div id="page-body">
+        <article class="post" id="page-main" role="main">
+      <header class="post-header">
+        <h1>
+          <a rel="bookmark"
+             href="https://djhoese.github.io/blog/2019/01/03/generating-a-time-series-of-goes-16-abi-channels/"
+             title="Permanent link to «Generating a time series of GOES-16 ABI channels»">
+             Generating a time series of GOES-16 ABI channels
+          </a>
+        </h1>
+        <div class="meta">
+<!-- includes/article_meta.html -->
+            <time datetime="2019-01-03T00:00:00-06:00">Thu 03 January 2019</time>
+            in «<a href="https://djhoese.github.io/category/articles.html">articles</a>» 
+            by <a href="https://djhoese.github.io/author/david-hoese.html">David Hoese</a>              <br />Tags:              <a rel="tag" href="https://djhoese.github.io/tag/python.html">python</a>,               <a rel="tag" href="https://djhoese.github.io/tag/satellite.html">satellite</a>,               <a rel="tag" href="https://djhoese.github.io/tag/satpy.html">satpy</a>,               <a rel="tag" href="https://djhoese.github.io/tag/pytroll.html">pytroll</a>        </div>
+      </header>
+      <div class="post-content"> 
+        <p>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>In the endless search for the coolest satellite data visualization I've now produced the following video after a request by a coworker. The video consists of GOES-16 ABI data from January 1st, 2019 from 10Z up to 24Z. Full disk images are used from each channel to show a time series of each channel from Channel 1 (C01) to Channel 16 (C16).</p>
+<p><sub>Disclaimer: I wasn't going to write this up, but changed my mind after the end result was kind of neat. The code shown here was copied after the fact and although ugly it should still work.
+</sub></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[16]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># If anyone has a better way to embed a youtube video in a jupyter notebook, let me know.</span>
+<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="k">import</span> <span class="n">HTML</span>
+<span class="n">HTML</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">&lt;iframe width=&quot;640&quot; height=&quot;360&quot; src=&quot;https://www.youtube.com/embed/GJY3lSBBry0?rel=0&quot; frameborder=&quot;0&quot; allow=&quot;accelerometer; encrypted-media; picture-in-picture&quot; allowfullscreen&gt;&lt;/iframe&gt;</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[16]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+<iframe width="640" height="360" src="https://www.youtube.com/embed/GJY3lSBBry0?rel=0" frameborder="0" allow="accelerometer; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Loading-the-individual-channels">Loading the individual channels<a class="anchor-link" href="#Loading-the-individual-channels">&#182;</a></h2><p>The below python code uses SatPy to load ABI L1B NetCDF files, aggregate/average the pixels to a lower 2km resolution for the higher resolution bands, then saves them in 16 separate MPEG-4 video files. As a SatPy maintainer I'd really like all of the filename hackery to be made easier and added to SatPy. Unfortunately I haven't had time to implement it properly yet.</p>
+<p>I used data I had access to from the SSEC Data Center. Information on accessing this data outside the SSEC is available on <a href="https://www.ssec.wisc.edu/datacenter/">their website</a>.</p>
+<p>The below python code in a script ran in about 2.5 hours for the 14 hours of data being processed. I ran this on a development server with 40 logical cores. I used the default dask threaded scheduler which means it created a worker for all 40 cores and likely could have made it go faster by using less workers.</p>
+<h3 id="The-Setup">The Setup<a class="anchor-link" href="#The-Setup">&#182;</a></h3><p>We are accessing the Data Center data from a lustre file system and due to locking behavior of the HDF5 library we have to set the following environment variable.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;HDF5_USE_FILE_LOCKING&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;FALSE&#39;</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Generating-Scenes">Generating Scenes<a class="anchor-link" href="#Generating-Scenes">&#182;</a></h3><p>We then need to create a <code>Scene</code> object for each time-step of the data. As mentioned above I'd really like to make this easier in the future, but for now this is what I do in a pinch. I first find all of the channel 1 (C01) files for all times I want. I then take the C01 filename and globify it to match all other channels for that time.</p>
+<p>After creating the <code>Scene</code> I load all of the channels (C01-C16) and resample the data (via aggregation) to a 2km resolution. The scene objects are yielded from the generator function to improve performance when using the <code>MultiScene</code> later on; creating the <code>Scene</code> objects when they are needed.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">satpy</span> <span class="k">import</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">MultiScene</span>
+<span class="kn">from</span> <span class="nn">glob</span> <span class="k">import</span> <span class="n">glob</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">dask.diagnostics</span> <span class="k">import</span> <span class="n">ProgressBar</span>
+
+<span class="n">base_dir</span> <span class="o">=</span> <span class="s1">&#39;/arcdata/goes/grb/goes16/{0:%Y}/{0:%Y_%m_</span><span class="si">%d</span><span class="s1">_%j}/abi/L1b/RadF&#39;</span>
+<span class="n">ds_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;C</span><span class="si">{:02d}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">17</span><span class="p">)]</span>
+
+<span class="k">def</span> <span class="nf">scene_generator</span><span class="p">(</span><span class="n">base_dir</span><span class="p">):</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2019</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">base_dir</span> <span class="o">=</span> <span class="n">base_dir</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
+    <span class="c1"># 1200Z to 2359</span>
+    <span class="n">c01_files</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_dir</span><span class="p">,</span> <span class="s1">&#39;OR_ABI-L1b-RadF-M3C01_G16_s{:%Y%j}[12]*.nc&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dt</span><span class="p">)))</span>
+    <span class="k">for</span> <span class="n">c01_file</span> <span class="ow">in</span> <span class="n">c01_files</span><span class="p">:</span>
+        <span class="n">ctime_idx</span> <span class="o">=</span> <span class="n">c01_file</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;e{:%Y}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dt</span><span class="p">))</span>
+        <span class="n">all_files</span> <span class="o">=</span> <span class="n">glob</span><span class="p">(</span><span class="n">c01_file</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;C01&#39;</span><span class="p">,</span> <span class="s1">&#39;C??&#39;</span><span class="p">)[:</span><span class="n">ctime_idx</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;*.nc&#39;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_files</span><span class="p">)</span> <span class="o">==</span> <span class="mi">16</span>
+        
+        <span class="n">scn</span> <span class="o">=</span> <span class="n">Scene</span><span class="p">(</span><span class="n">reader</span><span class="o">=</span><span class="s1">&#39;abi_l1b&#39;</span><span class="p">,</span> <span class="n">filenames</span><span class="o">=</span><span class="n">all_files</span><span class="p">)</span>
+        <span class="n">scn</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">ds_names</span><span class="p">)</span>
+        <span class="n">new_scn</span> <span class="o">=</span> <span class="n">scn</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">scn</span><span class="o">.</span><span class="n">min_area</span><span class="p">(),</span> <span class="n">resampler</span><span class="o">=</span><span class="s1">&#39;native&#39;</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">new_scn</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>After we pass the scene generator to the <code>MultiScene</code> we call the <code>save_animation</code> method to start saving the MPEG-4 videos. We specify the <code>name</code> and <code>start_time</code> fields in the filename which will be filled in when the first <code>Scene</code> is generated.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">with</span> <span class="n">ProgressBar</span><span class="p">():</span>
+    <span class="n">mscn</span> <span class="o">=</span> <span class="n">MultiScene</span><span class="p">(</span><span class="n">scene_generator</span><span class="p">(</span><span class="n">base_dir</span><span class="p">))</span>
+    <span class="c1">#mscn.load([&#39;C{:02d}&#39;.format(x) for x in range(1, 17)])</span>
+    <span class="c1">#new_mscn = mscn.resample(resampler=&#39;native&#39;)</span>
+    <span class="n">mscn</span><span class="o">.</span><span class="n">save_animation</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{name}</span><span class="s1">_{start_time:%Y%m</span><span class="si">%d</span><span class="s1">_%H%M%S}.mp4&#39;</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Combining-the-individual-videos-in-to-one">Combining the individual videos in to one<a class="anchor-link" href="#Combining-the-individual-videos-in-to-one">&#182;</a></h1><p>To join the individual videos together I used <code>ffmpeg</code> on the command line. First, we make the list of video files that will be merged:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">!</span><span class="k">for</span> fn in C*.mp4<span class="p">;</span> <span class="k">do</span> <span class="nb">echo</span> <span class="s2">&quot;file &#39;</span><span class="nv">$fn</span><span class="s2">&#39;&quot;</span> &gt;&gt;channel_videos.txt<span class="p">;</span> <span class="k">done</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Then call <code>ffmpeg</code> with the <code>concat</code> option to do the join:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">!</span>ffmpeg -f concat -i channel_videos.txt -c copy channel_videos.mp4
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>It was at this point that I noticed that the video was very choppy. Likely because of the default settings of the <code>imageio</code> library that SatPy uses to create the video (via ffmpeg). I tried using <code>ffmpeg</code> again to reduce the quality/bitrate for better play back:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">!</span>ffmpeg -i channel_videos.mp4 -vcodec libx264 -crf <span class="m">38</span> abi_channel_videos.compress2.mp4
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>I'm calling this good enough. In case you missed it the video is embedded near the top of this page.</p>
+
+</div>
+</div>
+</div>
+ 
+
+</p>
+      </div>
+      <footer class="post-footer">
+        <div class="meta">
+            Posted in «<a href="https://djhoese.github.io/category/articles.html">articles</a>» 
+            by <a href="https://djhoese.github.io/author/david-hoese.html">David Hoese</a><br />
+            Tags:  #<a href="https://djhoese.github.io/tag/python.html">python</a> #<a href="https://djhoese.github.io/tag/satellite.html">satellite</a> #<a href="https://djhoese.github.io/tag/satpy.html">satpy</a> #<a href="https://djhoese.github.io/tag/pytroll.html">pytroll</a>        </div>
+      </footer>
+      <hr />
+      <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = 'https-djhoese-github-io'; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+      </article> <!-- /#page-main -->
+
+        <aside id="page-side">
+          <!-- begin includes/sidebar.html -->
+          <nav>
+            <h3>Pages</h3>
+            <ul>
+              <li><a href="https://djhoese.github.io/index.html">Home</a></li>
+              <li><a href="https://djhoese.github.io/blog_index.html">Blog</a></li>
+              <li><a href="https://djhoese.github.io/categories.html">Categories</a></li>
+              <li><a href="https://djhoese.github.io/archives.html">Archives</a></li>
+              <li><a href="https://djhoese.github.io/tags.html">Tags</a></li>
+            </ul>
+          </nav>
+
+          <nav>
+            <h3>Categories</h3>
+            <ul>
+              <li class="active"><a href="https://djhoese.github.io/category/articles.html">articles</a></li>
+            </ul>
+          </nav>
+
+          <nav>
+            <h3>Links</h3>
+            <ul>
+              <li><a href="https://github.com/djhoese/">Github</a></li>
+              <li><a href="https://twitter.com/djhoese">Twitter</a></li>
+              <li><a href="http://pytroll.github.io/">PyTroll</a></li>
+              <li><a href="http://vispy.org/">VisPy</a></li>
+            </ul>
+          </nav>
+          <!-- end includes/sidebar.html --></aside> <!-- /#page-side -->
+      </div>  <!-- /#page-body -->
+
+      <footer id="page-foot">
+        <p> Powered by <a href="http://pelican.readthedocs.org">Pelican</a></p>
+      </footer>
+    </div> <!-- /#page -->
+  </body>
+</html>
